@@ -5,58 +5,63 @@ declare(strict_types=1);
 namespace App\Models;
 
 use PDO;
+use Throwable;
+use DomainException;
+use InvalidArgumentException;
+use RuntimeException;
 
 class Reserva
 {
-    // Propiedades de una reserva
-    public int $id;
-    public string $nombreHuesped;
-    public string $emailHuesped;
-    public string $nombreAlojamiento;
-    public string $fechaEntrada;
-    public string $fechaSalida;
-    public string $estado;
-    public string $importe;
-    public ?string $notas;
-    public string $fechaCreacion;
-
-    // Conexión a la base de datos
-    private PDO $pdo;
-
-    public function __construct(PDO $pdo)
+    public function __construct(private PDO $pdo)
     {
-        $this->pdo = $pdo;
     }
 
-    // Obtener todas las reservas
-    
+    // Obtener reservas aplicando filtros combinables.
     public function listar(array $filtros = []): array
     {
-        $sql = "SELECT * FROM reserva WHERE 1=1";
+        $sql = "SELECT
+                    id,
+                    nombre_huesped,
+                    email_huesped,
+                    nombre_alojamiento,
+                    fecha_entrada,
+                    fecha_salida,
+                    estado,
+                    importe,
+                    notas,
+                    fecha_creacion
+                FROM reserva
+                WHERE 1 = 1";
+
         $parametros = [];
 
-        // Filtrar por estado
         if (!empty($filtros['estado'])) {
             $sql .= " AND estado = :estado";
             $parametros['estado'] = $filtros['estado'];
         }
 
-        // Filtrar por fecha de entrada
+        // Buscar reservas que coincidan con el período indicado.
         if (!empty($filtros['fecha_desde'])) {
             $sql .= " AND fecha_salida > :fecha_desde";
             $parametros['fecha_desde'] = $filtros['fecha_desde'];
         }
 
-        // Filtrar por fecha de salida
         if (!empty($filtros['fecha_hasta'])) {
             $sql .= " AND fecha_entrada <= :fecha_hasta";
             $parametros['fecha_hasta'] = $filtros['fecha_hasta'];
         }
 
-        // Buscar por nombre del huésped
         if (!empty($filtros['huesped'])) {
-            $sql .= " AND nombre_huesped LIKE :huesped";
-            $parametros['huesped'] = '%' . $filtros['huesped'] . '%';
+            $sql .= " AND nombre_huesped LIKE :huesped ESCAPE '!'";
+
+            // Escapar los caracteres especiales de LIKE.
+            $nombre = str_replace(
+                ['!', '%', '_'],
+                ['!!', '!%', '!_'],
+                $filtros['huesped']
+            );
+
+            $parametros['huesped'] = '%' . $nombre . '%';
         }
 
         $sql .= " ORDER BY fecha_creacion DESC, id DESC";
@@ -67,11 +72,26 @@ class Reserva
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-
-    // Buscar una reserva por su ID
+    // Buscar una reserva por su identificador.
     public function buscarPorId(int $id): ?array
     {
-        $sql = "SELECT * FROM reserva WHERE id = :id";
+        if ($id <= 0) {
+            return null;
+        }
+
+        $sql = "SELECT
+                    id,
+                    nombre_huesped,
+                    email_huesped,
+                    nombre_alojamiento,
+                    fecha_entrada,
+                    fecha_salida,
+                    estado,
+                    importe,
+                    notas,
+                    fecha_creacion
+                FROM reserva
+                WHERE id = :id";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['id' => $id]);
@@ -81,32 +101,32 @@ class Reserva
         return $reserva ?: null;
     }
 
-    
+    // Crear una reserva y registrar su evento inicial.
     public function crear(array $datos): int
     {
-        $sql = "INSERT INTO reserva (
-                    nombre_huesped,
-                    email_huesped,
-                    nombre_alojamiento,
-                    fecha_entrada,
-                    fecha_salida,
-                    estado,
-                    importe,
-                    notas
-                ) VALUES (
-                    :nombre,
-                    :email,
-                    :alojamiento,
-                    :entrada,
-                    :salida,
-                    'pendiente',
-                    :importe,
-                    :notas
-                )";
-
         $this->pdo->beginTransaction();
 
         try {
+            $sql = "INSERT INTO reserva (
+                        nombre_huesped,
+                        email_huesped,
+                        nombre_alojamiento,
+                        fecha_entrada,
+                        fecha_salida,
+                        estado,
+                        importe,
+                        notas
+                    ) VALUES (
+                        :nombre,
+                        :email,
+                        :alojamiento,
+                        :entrada,
+                        :salida,
+                        'pendiente',
+                        :importe,
+                        :notas
+                    )";
+
             $stmt = $this->pdo->prepare($sql);
 
             $stmt->execute([
@@ -142,7 +162,7 @@ class Reserva
 
             return $reservaId;
 
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
@@ -151,30 +171,29 @@ class Reserva
         }
     }
 
-    
-    
+    // Confirmar o cancelar una reserva.
     public function cambiarEstado(int $id, string $nuevoEstado): bool
     {
-        // 1. Validar los parámetros
         if ($id <= 0) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'El identificador de la reserva no es válido.'
             );
         }
 
         if (!in_array($nuevoEstado, ['confirmada', 'cancelada'], true)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'El estado debe ser confirmada o cancelada.'
             );
         }
 
-        // 2. Iniciar la transacción
         $this->pdo->beginTransaction();
 
         try {
-            // 3. Buscar y bloquear la reserva
-            $sql = "SELECT estado FROM reserva
-                    WHERE id = :id FOR UPDATE";
+            // Bloquear la fila para evitar cambios simultáneos.
+            $sql = "SELECT estado
+                    FROM reserva
+                    WHERE id = :id
+                    FOR UPDATE";
 
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute(['id' => $id]);
@@ -182,27 +201,23 @@ class Reserva
             $reserva = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$reserva) {
-                throw new \RuntimeException(
-                    'La reserva no existe.'
-                );
+                throw new RuntimeException('La reserva no existe.');
             }
 
             $estadoActual = $reserva['estado'];
 
-            // 4. Evitar cambios repetidos
+            // No registrar un evento si el estado no cambia.
             if ($estadoActual === $nuevoEstado) {
                 $this->pdo->commit();
                 return false;
             }
 
-            // 5. Impedir modificar reservas canceladas
             if ($estadoActual === 'cancelada') {
-                throw new \DomainException(
+                throw new DomainException(
                     'Una reserva cancelada no puede modificarse.'
                 );
             }
 
-            // 6. Actualizar el estado
             $sql = "UPDATE reserva
                     SET estado = :estado
                     WHERE id = :id";
@@ -214,34 +229,35 @@ class Reserva
                 'id' => $id
             ]);
 
-            // 7. Determinar el tipo de evento
             $tipo = match ($nuevoEstado) {
                 'confirmada' => 'confirmacion',
                 'cancelada' => 'cancelacion'
             };
 
-            // 8. Registrar el evento en el historial
-            $sql = "INSERT INTO reserva_evento
-                        (reserva_id, tipo, descripcion)
-                    VALUES
-                        (:reserva_id, :tipo, :descripcion)";
+            $sqlEvento = "INSERT INTO reserva_evento (
+                            reserva_id,
+                            tipo,
+                            descripcion
+                        ) VALUES (
+                            :reserva_id,
+                            :tipo,
+                            :descripcion
+                        )";
 
-            $stmt = $this->pdo->prepare($sql);
+            $stmtEvento = $this->pdo->prepare($sqlEvento);
 
-            $stmt->execute([
+            $stmtEvento->execute([
                 'reserva_id' => $id,
                 'tipo' => $tipo,
-                'descripcion' => "Cambio de estado: $estadoActual a $nuevoEstado"
+                'descripcion' =>
+                    "Cambio de estado: $estadoActual a $nuevoEstado"
             ]);
 
-            // 9. Confirmar los cambios
             $this->pdo->commit();
 
             return true;
 
-        } catch (\Throwable $exception) {
-
-            // Deshacer los cambios si ocurre un error
+        } catch (Throwable $exception) {
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
@@ -250,11 +266,11 @@ class Reserva
         }
     }
 
-    
+    // Consultar el historial de eventos de una reserva.
     public function obtenerHistorial(int $id): array
     {
         if ($id <= 0) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'El identificador de la reserva no es válido.'
             );
         }
@@ -270,13 +286,8 @@ class Reserva
                 ORDER BY fecha_creacion ASC, id ASC";
 
         $stmt = $this->pdo->prepare($sql);
-
-        $stmt->execute([
-            'id' => $id
-        ]);
+        $stmt->execute(['id' => $id]);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
-
 }
