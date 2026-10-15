@@ -1,4 +1,3 @@
-
 {
     "name": "miguel/misterplan-reservas",
     "description": "Aplicación de gestión de reservas de alojamiento desarrollada en PHP nativo, MySQL, Twig y JavaScript para la prueba técnica de MisterPlan.",
@@ -11,7 +10,8 @@
         }
     ],
     "require": {
-        "twig/twig": "^3.30"
+        "twig/twig": "^3.30",
+        "vlucas/phpdotenv": "^5.7"
     },
     "autoload": {
         "psr-4": {
