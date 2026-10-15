@@ -1,0 +1,410 @@
+
+/* ==========================================
+   MISTERPLAN - ESTILOS GENERALES
+========================================== */
+
+:root {
+    --primary: #183153;
+    --primary-hover: #27496d;
+    --accent: #087e8b;
+    --background: #f4f7fb;
+    --surface: #ffffff;
+    --text: #263445;
+    --muted: #64748b;
+    --border: #dce3ec;
+    --danger: #b42318;
+    --danger-hover: #912018;
+    --success: #157347;
+    --radius: 10px;
+    --shadow: 0 3px 14px rgba(24, 49, 83, 0.07);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--background);
+    color: var(--text);
+    line-height: 1.6;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+/* ==========================================
+   CABECERA Y NAVEGACIÓN
+========================================== */
+
+header {
+    background: var(--primary);
+    color: white;
+    padding: 18px 24px;
+}
+
+header nav {
+    max-width: 1150px;
+    margin: 0 auto;
+}
+
+header a {
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+header a:hover {
+    color: #b8eef0;
+}
+
+/* ==========================================
+   CONTENIDO PRINCIPAL
+========================================== */
+
+main {
+    width: min(1150px, calc(100% - 32px));
+    margin: 36px auto 60px;
+}
+
+h1 {
+    font-size: 2rem;
+    color: var(--primary);
+    margin: 0 0 10px;
+}
+
+h2 {
+    font-size: 1.25rem;
+    color: var(--primary);
+    margin: 0 0 20px;
+}
+
+main > p {
+    color: var(--muted);
+    margin-bottom: 24px;
+}
+
+section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 26px;
+    margin-top: 25px;
+}
+
+/* ==========================================
+   FORMULARIOS
+========================================== */
+
+form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+form > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+label {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: white;
+    color: var(--text);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+textarea {
+    resize: vertical;
+}
+
+/* ==========================================
+   BOTONES
+========================================== */
+
+button {
+    padding: 11px 18px;
+    border: none;
+    border-radius: 7px;
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+    transition: background 0.2s ease;
+}
+
+button:hover {
+    background: var(--primary-hover);
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+button[type="reset"] {
+    background: #e8edf3;
+    color: var(--primary);
+}
+
+button[type="reset"]:hover {
+    background: #d7e0e9;
+}
+
+#btn-crear-reserva,
+#btn-confirmar {
+    background: var(--success);
+}
+
+#btn-crear-reserva:hover,
+#btn-confirmar:hover {
+    background: #105b38;
+}
+
+#btn-cancelar {
+    background: var(--danger);
+}
+
+#btn-cancelar:hover {
+    background: var(--danger-hover);
+}
+
+#acciones-reserva {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* ==========================================
+   MENSAJES DE ESTADO
+========================================== */
+
+#mensaje-reservas,
+#mensaje-crear,
+#mensaje-estado {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin: 12px 0;
+}
+
+#mensaje-crear {
+    grid-column: 1 / -1;
+}
+
+#mensaje-crear:not(:empty),
+#mensaje-estado:not(:empty) {
+    padding: 11px 14px;
+    background: #e9f6f4;
+    border-left: 4px solid var(--accent);
+    border-radius: 5px;
+}
+
+/* ==========================================
+   TABLA DE RESERVAS
+========================================== */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+}
+
+thead {
+    background: #edf3f8;
+}
+
+th,
+td {
+    padding: 13px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+th {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+tbody tr:hover {
+    background: #f8fafc;
+}
+
+td a {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* ==========================================
+   DETALLE DE RESERVA
+========================================== */
+
+dl {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 13px 20px;
+    margin: 0;
+}
+
+dt {
+    color: var(--muted);
+    font-weight: 600;
+}
+
+dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+#estado-reserva {
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+/* ==========================================
+   HISTORIAL DE EVENTOS
+========================================== */
+
+#historial-reserva {
+    list-style: none;
+    padding: 0 0 0 20px;
+    margin: 0;
+    border-left: 2px solid var(--border);
+}
+
+#historial-reserva li {
+    position: relative;
+    padding: 0 0 24px 20px;
+}
+
+#historial-reserva li:last-child {
+    padding-bottom: 0;
+}
+
+#historial-reserva li::before {
+    content: "";
+    position: absolute;
+    left: -27px;
+    top: 7px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid white;
+}
+
+#historial-reserva strong {
+    color: var(--primary);
+}
+
+#historial-reserva p {
+    margin: 4px 0;
+}
+
+#historial-reserva time {
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+/* ==========================================
+   PIE DE PÁGINA
+========================================== */
+
+footer {
+    padding: 24px;
+    text-align: center;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+}
+
+/* ==========================================
+   DISEÑO RESPONSIVE
+========================================== */
+
+@media (max-width: 900px) {
+    /* Permitir desplazamiento horizontal
+       si la tabla no cabe en la pantalla. */
+    section:has(table) {
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 820px;
+    }
+}
+
+@media (max-width: 600px) {
+    main {
+        width: calc(100% - 24px);
+        margin-top: 24px;
+    }
+
+    h1 {
+        font-size: 1.6rem;
+    }
+
+    section {
+        padding: 18px;
+    }
+
+    form {
+        grid-template-columns: 1fr;
+    }
+
+    #mensaje-crear {
+        grid-column: 1;
+    }
+
+    dl {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+
+    dd {
+        margin-bottom: 12px;
+    }
+
+    button {
+        width: 100%;
+    }
+
+    #acciones-reserva {
+        flex-direction: column;
+    }
+}

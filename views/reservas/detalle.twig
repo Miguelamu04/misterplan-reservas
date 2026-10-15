@@ -1,0 +1,91 @@
+
+{% extends "base.twig" %}
+
+{% block title %}
+    Reserva #{{ reserva.id }} | MisterPlan
+{% endblock %}
+
+{% block content %}
+
+<a href="/reservas">← Volver al listado</a>
+
+<h1>Detalle de la reserva #{{ reserva.id }}</h1>
+
+<section>
+    <h2>Información de la reserva</h2>
+
+    <dl>
+        <dt>Huésped</dt>
+        <dd>{{ reserva.nombre_huesped }}</dd>
+
+        <dt>Email</dt>
+        <dd>{{ reserva.email_huesped }}</dd>
+
+        <dt>Alojamiento</dt>
+        <dd>{{ reserva.nombre_alojamiento }}</dd>
+
+        <dt>Fecha de entrada</dt>
+        <dd>{{ reserva.fecha_entrada|date("d/m/Y") }}</dd>
+
+        <dt>Fecha de salida</dt>
+        <dd>{{ reserva.fecha_salida|date("d/m/Y") }}</dd>
+
+        <dt>Estado</dt>
+        <dd id="estado-reserva">{{ reserva.estado }}</dd>
+
+        <dt>Importe</dt>
+        <dd>{{ reserva.importe|number_format(2, ',', '.') }} €</dd>
+
+        <dt>Notas</dt>
+        <dd>{{ reserva.notas ?: 'Sin notas' }}</dd>
+    </dl>
+</section>
+
+<section aria-labelledby="titulo-acciones">
+    <h2 id="titulo-acciones">Gestionar reserva</h2>
+
+    <div id="acciones-reserva"
+         data-id="{{ reserva.id }}"
+         data-estado="{{ reserva.estado }}">
+
+        {% if reserva.estado == 'pendiente' %}
+            <button type="button" id="btn-confirmar">
+                Confirmar reserva
+            </button>
+        {% endif %}
+
+        {% if reserva.estado != 'cancelada' %}
+            <button type="button" id="btn-cancelar">
+                Cancelar reserva
+            </button>
+        {% else %}
+            <p>Esta reserva está cancelada y no puede modificarse.</p>
+        {% endif %}
+    </div>
+
+    <p id="mensaje-estado" role="status" aria-live="polite"></p>
+</section>
+
+<section>
+    <h2>Historial de eventos</h2>
+
+    <ol id="historial-reserva">
+        {% for evento in historial %}
+            <li>
+                <strong>{{ evento.tipo|capitalize }}</strong>
+                <p>{{ evento.descripcion }}</p>
+                <time datetime="{{ evento.fecha_creacion }}">
+                    {{ evento.fecha_creacion|date("d/m/Y H:i") }}
+                </time>
+            </li>
+        {% else %}
+            <li>No hay eventos registrados.</li>
+        {% endfor %}
+    </ol>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="/assets/js/detalle.js" defer></script>
+{% endblock %}

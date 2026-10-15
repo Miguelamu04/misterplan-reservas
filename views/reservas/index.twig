@@ -1,0 +1,208 @@
+
+{% extends "base.twig" %}
+
+{% block title %}Listado de reservas | MisterPlan{% endblock %}
+
+{% block content %}
+
+<h1>Gestión de reservas</h1>
+
+<p>Consulta y administra las reservas de alojamiento.</p>
+
+
+<section aria-labelledby="titulo-crear">
+    <h2 id="titulo-crear">Nueva reserva</h2>
+
+    <form id="form-crear-reserva">
+        <div>
+            <label for="nombre_huesped">Nombre del huésped *</label>
+            <input
+                type="text"
+                id="nombre_huesped"
+                name="nombre_huesped"
+                maxlength="150"
+                required
+            >
+        </div>
+
+        <div>
+            <label for="email_huesped">Correo electrónico *</label>
+            <input
+                type="email"
+                id="email_huesped"
+                name="email_huesped"
+                maxlength="254"
+                required
+            >
+        </div>
+
+        <div>
+            <label for="nombre_alojamiento">Alojamiento *</label>
+            <input
+                type="text"
+                id="nombre_alojamiento"
+                name="nombre_alojamiento"
+                maxlength="200"
+                required
+            >
+        </div>
+
+        <div>
+            <label for="fecha_entrada">Fecha de entrada *</label>
+            <input
+                type="date"
+                id="fecha_entrada"
+                name="fecha_entrada"
+                required
+            >
+        </div>
+
+        <div>
+            <label for="fecha_salida">Fecha de salida *</label>
+            <input
+                type="date"
+                id="fecha_salida"
+                name="fecha_salida"
+                required
+            >
+        </div>
+
+        <div>
+            <label for="importe">Importe (€) *</label>
+            <input
+                type="number"
+                id="importe"
+                name="importe"
+                min="0"
+                max="99999999.99"
+                step="0.01"
+                required
+            >
+        </div>
+
+        <div>
+            <label for="notas">Notas adicionales</label>
+            <textarea
+                id="notas"
+                name="notas"
+                maxlength="5000"
+                rows="3"
+            ></textarea>
+        </div>
+
+        <button type="submit" id="btn-crear-reserva">
+            Crear reserva
+        </button>
+
+        <p id="mensaje-crear" role="status" aria-live="polite"></p>
+    </form>
+</section>
+
+<section aria-labelledby="titulo-filtros">
+
+    <h2 id="titulo-filtros">Filtrar reservas</h2>
+
+    <form id="form-filtros">
+
+        <div>
+            <label for="filtro-estado">Estado</label>
+
+            <select id="filtro-estado" name="estado">
+                <option value="">Todos los estados</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="confirmada">Confirmada</option>
+                <option value="cancelada">Cancelada</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="filtro-desde">Fecha desde</label>
+            <input
+                type="date"
+                id="filtro-desde"
+                name="fecha_desde"
+            >
+        </div>
+
+        <div>
+            <label for="filtro-hasta">Fecha hasta</label>
+            <input
+                type="date"
+                id="filtro-hasta"
+                name="fecha_hasta"
+            >
+        </div>
+
+        <div>
+            <label for="filtro-huesped">Nombre del huésped</label>
+            <input
+                type="text"
+                id="filtro-huesped"
+                name="huesped"
+                maxlength="150"
+                placeholder="Buscar huésped..."
+            >
+        </div>
+
+        <button type="submit">Buscar</button>
+        <button type="reset">Limpiar filtros</button>
+
+    </form>
+
+</section>
+
+<section aria-labelledby="titulo-reservas">
+
+    <h2 id="titulo-reservas">Listado de reservas</h2>
+
+    <p id="mensaje-reservas" role="status" aria-live="polite"></p>
+
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Huésped</th>
+                <th scope="col">Alojamiento</th>
+                <th scope="col">Entrada</th>
+                <th scope="col">Salida</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Importe</th>
+                <th scope="col">Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody id="tabla-reservas">
+            {% for reserva in reservas %}
+                <tr>
+                    <td>{{ reserva.id }}</td>
+                    <td>{{ reserva.nombre_huesped }}</td>
+                    <td>{{ reserva.nombre_alojamiento }}</td>
+                    <td>{{ reserva.fecha_entrada|date("d/m/Y") }}</td>
+                    <td>{{ reserva.fecha_salida|date("d/m/Y") }}</td>
+                    <td>{{ reserva.estado }}</td>
+                    <td>
+                        {{ reserva.importe|number_format(2, ',', '.') }} €
+                    </td>
+                    <td>
+                        <a href="/reservas/{{ reserva.id }}">
+                            Ver detalle
+                        </a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="8">
+                        No hay reservas disponibles.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="/assets/js/reservas.js" defer></script>
+{% endblock %}
